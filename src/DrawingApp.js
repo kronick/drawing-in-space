@@ -14,7 +14,6 @@ export default class DrawingApp extends React.Component {
       confirmedPoints: [],
       justStarted: false,
       server: new DrawingServer(),
-      refreshInterval: null,
     };
 
     this.onMouseDown = this.onMouseDown.bind(this);
@@ -25,14 +24,7 @@ export default class DrawingApp extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      refreshInterval: window.setInterval(this.refresh, 33),
-    });
-  }
-  componentWillUnmount() {
-    if (this.state.refreshInterval) {
-      window.clearInterval(this.state.refreshInterval);
-    }
+    this.reset();
   }
 
   onMouseDown(ev) {
@@ -78,27 +70,28 @@ export default class DrawingApp extends React.Component {
       // And send to the "remote" server
       this.state.server
         .addPoints(newPoints)
-        .then(response => {
+        .then(() => {
           // Success
+          this.refresh();
         })
-        .catch(error => {
+        .catch((error) => {
           // Failure
         });
     }
   }
 
   reset() {
-    this.setState({ points: [] });
+    this.setState({ points: [], confirmedPoints: [], justStarted: true });
     this.state.server.reset();
   }
 
   refresh() {
     this.state.server
       .getPoints()
-      .then(response => {
-        this.setState({ confirmedPoints: response });
+      .then((confirmedPoints) => {
+        this.setState({ confirmedPoints });
       })
-      .catch(error => {
+      .catch((error) => {
         console.warn(error);
       });
   }
